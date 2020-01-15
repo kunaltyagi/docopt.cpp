@@ -28,15 +28,15 @@ namespace docopt {
 	// Utility to use Pattern types in std hash-containers
 	struct PatternHasher {
 		template <typename P>
-		size_t operator()(std::shared_ptr<P> const& pattern) const {
+		constexpr size_t operator()(std::shared_ptr<P> const& pattern) const noexcept {
 			return pattern->hash();
 		}
 		template <typename P>
-		size_t operator()(P const* pattern) const {
+		constexpr size_t operator()(P const* pattern) const noexcept {
 			return pattern->hash();
 		}
 		template <typename P>
-		size_t operator()(P const& pattern) const {
+		constexpr size_t operator()(P const& pattern) const noexcept {
 			return pattern.hash();
 		}
 	};
@@ -44,11 +44,11 @@ namespace docopt {
 	// Utility to use 'hash' as the equality operator as well in std containers
 	struct PatternPointerEquality {
 		template <typename P1, typename P2>
-		bool operator()(std::shared_ptr<P1> const& p1, std::shared_ptr<P2> const& p2) const {
+		constexpr bool operator()(std::shared_ptr<P1> const& p1, std::shared_ptr<P2> const& p2) const noexcept {
 			return p1->hash()==p2->hash();
 		}
 		template <typename P1, typename P2>
-		bool operator()(P1 const* p1, P2 const* p2) const {
+		constexpr bool operator()(P1 const* p1, P2 const* p2) const noexcept {
 			return p1->hash()==p2->hash();
 		}
 	};
@@ -60,24 +60,24 @@ namespace docopt {
 	class Pattern {
 	public:
 		// flatten out children, stopping descent when the given filter returns 'true'
-		virtual std::vector<Pattern*> flat(bool (*filter)(Pattern const*)) = 0;
+		virtual constexpr std::vector<Pattern*> flat(bool (*filter)(Pattern const*)) noexcept = 0;
 
 		// flatten out all children into a list of LeafPattern objects
-		virtual void collect_leaves(std::vector<LeafPattern*>&) = 0;
+		virtual constexpr void collect_leaves(std::vector<LeafPattern*>&) noexcept = 0;
 
 		// flatten out all children into a list of LeafPattern objects
-		std::vector<LeafPattern*> leaves();
+		constexpr std::vector<LeafPattern*> leaves() noexcept;
 
 		// Attempt to find something in 'left' that matches this pattern's spec, and if so, move it to 'collected'
-		virtual bool match(PatternList& left, std::vector<std::shared_ptr<LeafPattern>>& collected) const = 0;
+		virtual constexpr bool match(PatternList& left, std::vector<std::shared_ptr<LeafPattern>>& collected) const noexcept = 0;
 
-		virtual std::string const& name() const = 0;
+		virtual constexpr std::string const& name() const noexcept = 0;
 
-		virtual bool hasValue() const { return false; }
+		virtual constexpr bool hasValue() const noexcept { return false; }
 
-		virtual size_t hash() const = 0;
+		virtual constexpr size_t hash() const noexcept = 0;
 
-		virtual ~Pattern() = default;
+		virtual ~Pattern() noexcept = default;
 	};
 
 	class LeafPattern
@@ -88,27 +88,27 @@ namespace docopt {
 		  fValue(std::move(v))
 		{}
 
-		virtual std::vector<Pattern*> flat(bool (*filter)(Pattern const*)) override {
+		virtual std::vector<Pattern*> flat(bool (*filter)(Pattern const*)) noexcept override {
 			if (filter(this)) {
 				return { this };
 			}
 			return {};
 		}
 
-		virtual void collect_leaves(std::vector<LeafPattern*>& lst) override final {
+		virtual void collect_leaves(std::vector<LeafPattern*>& lst) noexcept override final {
 			lst.push_back(this);
 		}
 
-		virtual bool match(PatternList& left, std::vector<std::shared_ptr<LeafPattern>>& collected) const override;
+		virtual constexpr bool match(PatternList& left, std::vector<std::shared_ptr<LeafPattern>>& collected) const noexcept override;
 
-		virtual bool hasValue() const override { return static_cast<bool>(fValue); }
+		virtual bool hasValue() const noexcept override { return static_cast<bool>(fValue); }
 
-		value const& getValue() const { return fValue; }
-		void setValue(value&& v) { fValue = std::move(v); }
+		value constexpr const& getValue() const noexcept { return fValue; }
+		void setValue(value&& v) noexcept { fValue = std::move(v); }
 
-		virtual std::string const& name() const override { return fName; }
+		virtual constexpr std::string const& name() const noexcept override { return fName; }
 
-		virtual size_t hash() const override {
+		virtual size_t hash() const noexcept override {
 			size_t seed = typeid(*this).hash_code();
 			hash_combine(seed, fName);
 			hash_combine(seed, fValue);
@@ -116,7 +116,7 @@ namespace docopt {
 		}
 
 	protected:
-		virtual std::pair<size_t, std::shared_ptr<LeafPattern>> single_match(PatternList const&) const = 0;
+		virtual constexpr std::pair<size_t, std::shared_ptr<LeafPattern>> single_match(PatternList const&) const noexcept = 0;
 
 	private:
 		std::string fName;
@@ -126,11 +126,11 @@ namespace docopt {
 	class BranchPattern
 	: public Pattern {
 	public:
-		BranchPattern(PatternList children = {})
+		constexpr BranchPattern(PatternList children = {})
 		: fChildren(std::move(children))
 		{}
 
-		Pattern& fix() {
+		constexpr Pattern& fix() noexcept {
 			UniquePatternSet patterns;
 			fix_identities(patterns);
 			fix_repeating_arguments();
