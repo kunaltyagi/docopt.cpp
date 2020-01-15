@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.8)
 project(docopt.cpp VERSION 0.6.2)
 
 include(GNUInstallDirs)
@@ -8,7 +8,6 @@ include(GNUInstallDirs)
 #============================================================================
 option(WITH_TESTS "Build tests." OFF)
 option(WITH_EXAMPLE "Build example." OFF)
-option(USE_BOOST_REGEX "Replace std::regex with Boost.Regex" OFF)
 
 #============================================================================
 # Internal compiler options
@@ -16,8 +15,8 @@ option(USE_BOOST_REGEX "Replace std::regex with Boost.Regex" OFF)
 # C++ standard
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 11)
-	set(CMAKE_CXX_STANDARD 11)
+if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 17)
+	set(CMAKE_CXX_STANDARD 17)
 endif()
 
 #============================================================================
